@@ -7,13 +7,14 @@ namespace kvs
     class Command;
     class GraphicPipeline;
     class ImageView;
- 
+    class VertexBuffer;
+
     class App{
     public:
         explicit App(LogicDevice& device, Command& command);
         void CreateSyncObject();
         void DestroySyncObject();
-        void DrawFrame(GraphicPipeline& drawPass, SwapChain& swapchain, ImageView& imageView);
+        void DrawFrame(GraphicPipeline& drawPass, SwapChain& swapchain, ImageView& imageView, VertexBuffer& vertex_buffer);
 
     private:
         

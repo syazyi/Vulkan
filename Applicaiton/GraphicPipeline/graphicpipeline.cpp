@@ -2,6 +2,8 @@
 
 #include "LogicDevice/logicdevice.h"
 #include "SwapChain/swapchain.h"
+
+#include "framework/Vertex/vertex.h"
 namespace kvs
 {
     
@@ -13,7 +15,7 @@ namespace kvs
 
     }
 
-    void GraphicPipeline::CreatePipeline()
+    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer)
     {
         //create render pass
         CreateRenderPass();
@@ -52,8 +54,10 @@ namespace kvs
         std::vector<VkDynamicState> dynamicStates{VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
         auto dynamicState = EnableDynamicState(dynamicStates);
 
+        auto bindDes = vertex_buffer.m_vertex.GetBindingDescription();
+        auto attrDes = vertex_buffer.m_vertex.GetAttributeDescription();
         //fixable pipeline stage
-        auto vertexInput = RequestVertexInputStateCreateInfo();
+        auto vertexInput = RequestVertexInputStateCreateInfo(&bindDes, 1, attrDes.data(), attrDes.size());
         auto inputAssmbly = RequestInputAssemblyStateCreateInfo();
 
         auto viewportNeed = RequestVkViewport();
@@ -205,14 +209,14 @@ namespace kvs
         vkDestroyShaderModule(m_device, shader_module, nullptr);
     }
 
-    VkPipelineVertexInputStateCreateInfo GraphicPipeline::RequestVertexInputStateCreateInfo(){
+    VkPipelineVertexInputStateCreateInfo GraphicPipeline::RequestVertexInputStateCreateInfo(VkVertexInputBindingDescription* bind, uint32_t bindCount, VkVertexInputAttributeDescription* attr, uint32_t attrCount){
         VkPipelineVertexInputStateCreateInfo VertexInputCreateInfo{};
         VertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-        VertexInputCreateInfo.vertexBindingDescriptionCount = 0;
-        VertexInputCreateInfo.pVertexBindingDescriptions = nullptr;
-        VertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-        VertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;
+        VertexInputCreateInfo.vertexBindingDescriptionCount = bindCount;
+        VertexInputCreateInfo.pVertexBindingDescriptions = bind;
+        VertexInputCreateInfo.vertexAttributeDescriptionCount = attrCount;
+        VertexInputCreateInfo.pVertexAttributeDescriptions = attr;
         return VertexInputCreateInfo;
     }
 

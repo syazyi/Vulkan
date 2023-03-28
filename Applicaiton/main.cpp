@@ -12,6 +12,7 @@
 #include "GraphicPipeline/graphicpipeline.h"
 #include "CommandBuffer/commandbuffer.h"
 #include "framework/app.h"
+#include "framework/Vertex/vertex.h"
 
 std::vector<uint32_t> compile_file(const std::string& source_name,
                                    shaderc_shader_kind kind,
@@ -73,27 +74,42 @@ int main(int argc, char** argv){
     auto vertexShader = compile_file("main", shaderc_shader_kind::shaderc_vertex_shader, vert_shader_string);
     auto fragmentShader = compile_file("main", shaderc_shader_kind::shaderc_fragment_shader, frag_shader_string);
     
+    std::vector<kvs::VertexInfo> vertices = {
+        {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+    kvs::Vertex test_vertex(vertices);
+
+    kvs::VertexBuffer vertex_buffer(logic_device, physical_device, test_vertex);
+    vertex_buffer.AllocateVertexBuffer();
+
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);
-    pipeline.CreatePipeline();
+    pipeline.CreatePipeline(vertex_buffer);
     pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D());
+
 
     kvs::Command commandSystem(logic_device);
     commandSystem.CreateCommand(physical_device.m_hasFindQueueFamily);
-    commandSystem.RecordDrawCommand(0, pipeline, swap_chain);
+    //commandSystem.RecordDrawCommand(0, pipeline, swap_chain, vertex_buffer);
 
     kvs::App app(logic_device, commandSystem);
     app.CreateSyncObject();
 
-
+    
     while (!glfwWindowShouldClose(glfw_window.GetWindow())) {
         glfwPollEvents();
-        app.DrawFrame(pipeline, swap_chain, image_view);
+        app.DrawFrame(pipeline, swap_chain, image_view, vertex_buffer);
     }
     vkDeviceWaitIdle(logic_device.GetLogicDevice());
 
+    swap_chain.CleanUpSwapChain(image_view, pipeline);
+
+    vertex_buffer.FreeVertexBuffer();
+
     app.DestroySyncObject();
     commandSystem.DestroyCommand();
-    swap_chain.CleanUpSwapChain(image_view, pipeline);
+
     pipeline.DestroyPipeline();
 
 

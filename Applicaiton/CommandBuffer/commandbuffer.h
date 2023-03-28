@@ -1,5 +1,6 @@
 #include "framework/kvulkan.h"
 #include "PhysicalDevice/physicaldevice.h"
+#include "framework/Vertex/vertex.h"
 namespace kvs
 {
     class LogicDevice;
@@ -10,7 +11,7 @@ namespace kvs
         Command(LogicDevice& device);
 
         void CreateCommand(QueueFamilyIndices indices);
-        void RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain);
+        void RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer);
         void DestroyCommand();
 
     private:

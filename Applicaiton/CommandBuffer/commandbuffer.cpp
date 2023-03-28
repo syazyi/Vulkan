@@ -50,7 +50,7 @@ namespace kvs
         }
     }
 
-    void Command::RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain)
+    void Command::RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer)
     {
         auto drawCommandBuffer = m_drawCommandBuffer[currentFrame];
         VkCommandBufferBeginInfo commandBufferBeginInfo{};
@@ -94,7 +94,11 @@ namespace kvs
         rect2d.offset = { 0, 0 };
         vkCmdSetScissor(drawCommandBuffer, 0, 1, &rect2d);
 
-        vkCmdDraw(drawCommandBuffer, 3, 1, 0, 0);
+        VkBuffer buffers[] = { vertex_buffer.m_vertexBuffer };
+        VkDeviceSize deviceSize[] = { 0 };
+        vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, buffers, deviceSize);
+
+        vkCmdDraw(drawCommandBuffer, vertex_buffer.m_vertex.m_vertexs.size(), 1, 0, 0);
 
         vkCmdEndRenderPass(drawCommandBuffer);
 

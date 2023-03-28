@@ -3,6 +3,7 @@
 
 #include "vulkan.hpp"
 
+
 namespace kvs {
 	struct SwapChainSupportDetail
 	{

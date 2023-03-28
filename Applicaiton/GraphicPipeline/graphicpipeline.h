@@ -6,12 +6,14 @@ namespace kvs
 {
     class LogicDevice;
     class SwapChain;
+    class VertexBuffer;
+
     class GraphicPipeline{
     public:
         GraphicPipeline(LogicDevice& device, SwapChain& swapchain, const std::vector<uint32_t>& vertex_shader, const std::vector<uint32_t>& fragment_shader);
         ~GraphicPipeline(){}
 
-        void CreatePipeline();
+        void CreatePipeline(VertexBuffer& vertex_buffer);
         void DestroyPipeline();
 
         void CreateRenderPass();
@@ -36,7 +38,7 @@ namespace kvs
     private:
         void CreateShaderMoudle(VkShaderModule& shader_module, std::vector<uint32_t>& code);
         void DestroyShaderMoudle(VkShaderModule& shader_module);
-        VkPipelineVertexInputStateCreateInfo RequestVertexInputStateCreateInfo();
+        VkPipelineVertexInputStateCreateInfo RequestVertexInputStateCreateInfo(VkVertexInputBindingDescription* bind, uint32_t bindCount, VkVertexInputAttributeDescription* attr, uint32_t attrCount);
         VkPipelineInputAssemblyStateCreateInfo RequestInputAssemblyStateCreateInfo();
 
         VkViewport RequestVkViewport();

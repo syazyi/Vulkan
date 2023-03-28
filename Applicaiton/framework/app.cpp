@@ -4,6 +4,7 @@
 #include "CommandBuffer/commandbuffer.h"
 #include "ImageView/imageview.h"
 #include "window/include/window.h"
+#include "framework/Vertex/vertex.h"
 namespace kvs
 {
     App::App(LogicDevice& device, Command& command) : m_device(device.GetLogicDevice()), m_command(command), 
@@ -43,7 +44,7 @@ namespace kvs
         }
     }
 
-    void App::DrawFrame(GraphicPipeline& drawPass, SwapChain& swapchain, ImageView& imageView)
+    void App::DrawFrame(GraphicPipeline& drawPass, SwapChain& swapchain, ImageView& imageView, VertexBuffer& vertex_buffer)
     {
         vkWaitForFences(m_device, 1, &m_oneFrame[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -59,7 +60,7 @@ namespace kvs
         vkResetFences(m_device, 1, &m_oneFrame[currentFrame]);
 
         vkResetCommandBuffer(m_command.m_drawCommandBuffer[currentFrame], 0);
-        m_command.RecordDrawCommand(imageIndex, drawPass, swapchain);
+        m_command.RecordDrawCommand(imageIndex, drawPass, swapchain, vertex_buffer);
 
         VkSubmitInfo subInfo{};
         subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
