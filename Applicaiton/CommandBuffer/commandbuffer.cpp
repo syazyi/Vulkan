@@ -98,7 +98,11 @@ namespace kvs
         VkDeviceSize deviceSize[] = { 0 };
         vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, buffers, deviceSize);
 
-        vkCmdDraw(drawCommandBuffer, vertex_buffer.m_vertex.m_vertexs.size(), 1, 0, 0);
+        auto& indexBuffer = vertex_buffer.m_IndexBuffer.GetBuffer();
+        vkCmdBindIndexBuffer(drawCommandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+        //vkCmdDraw(drawCommandBuffer, vertex_buffer.m_vertex.m_vertexs.size(), 1, 0, 0);
+        vkCmdDrawIndexed(drawCommandBuffer, vertex_buffer.m_vertex.m_vertexIndices.size(), 1, 0, 0, 0);
 
         vkCmdEndRenderPass(drawCommandBuffer);
 

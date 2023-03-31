@@ -75,11 +75,15 @@ int main(int argc, char** argv){
     auto fragmentShader = compile_file("main", shaderc_shader_kind::shaderc_fragment_shader, frag_shader_string);
     
     std::vector<kvs::VertexInfo> vertices = {
-        {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+        {{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
         {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}
     };
-    kvs::Vertex test_vertex(vertices);
+    std::vector<kvs::VertexIndexInfo> indices = {
+        0, 1, 2, 0, 2, 3
+    };
+    kvs::Vertex test_vertex(vertices, indices);
 
     kvs::Command commandSystem(logic_device);
     commandSystem.CreateCommand(physical_device.m_hasFindQueueFamily);
@@ -88,6 +92,8 @@ int main(int argc, char** argv){
 
     kvs::VertexBuffer vertex_buffer(logic_device, physical_device, test_vertex);
     vertex_buffer.AllocateVertexBuffer(commandSystem, logic_device.m_GraphicsQueue);
+    vertex_buffer.AllocateIndexBuffer(commandSystem, logic_device.m_GraphicsQueue);
+
 
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);
     pipeline.CreatePipeline(vertex_buffer);
@@ -106,6 +112,7 @@ int main(int argc, char** argv){
 
     swap_chain.CleanUpSwapChain(image_view, pipeline);
 
+    vertex_buffer.FreeIndexBuffer();
     vertex_buffer.FreeVertexBuffer();
 
     app.DestroySyncObject();

@@ -15,9 +15,11 @@ namespace kvs
         glm::vec3 Color;
     };
     
+    using VertexIndexInfo = uint16_t;
+
     class Vertex {
     public:
-        Vertex(std::vector<VertexInfo>& vertices) : m_vertexs(vertices) {
+        Vertex(std::vector<VertexInfo>& vertices, std::vector<VertexIndexInfo>& indices) : m_vertexs(vertices), m_vertexIndices(indices){
 
         }
 
@@ -49,6 +51,7 @@ namespace kvs
         }
 
         std::vector<VertexInfo> m_vertexs;
+        std::vector<VertexIndexInfo> m_vertexIndices;
     private:
     };
 
@@ -59,10 +62,14 @@ namespace kvs
         void AllocateVertexBuffer(Command& command, VkQueue& queue);
         void FreeVertexBuffer();
 
-        void CopyBuffer(Buffer& m_StagingBuffer, Command& command, VkDeviceSize size, VkQueue& queue);
+        void AllocateIndexBuffer(Command& command, VkQueue& queue);
+        void FreeIndexBuffer();
+
+        void CopyBuffer(Buffer& m_StagingBuffer, Buffer& dstBuffer, Command& command, VkDeviceSize size, VkQueue& queue);
 
         Vertex& m_vertex;
         Buffer m_VertexBuffer;
+        Buffer m_IndexBuffer;
     private:
         VkDevice& m_device;
         VkPhysicalDevice& m_pDevice;
