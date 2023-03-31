@@ -14,6 +14,7 @@ namespace kvs
         void RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer);
         void DestroyCommand();
 
+        VkCommandPool m_pool;
     private:
         void CreateCommandPool(QueueFamilyIndices& indices);
         void DestroyCommandPool();
@@ -23,7 +24,6 @@ namespace kvs
     private:
         VkDevice& m_device;
 
-        VkCommandPool m_pool;
     public:
         std::vector<VkCommandBuffer> m_drawCommandBuffer;
     };

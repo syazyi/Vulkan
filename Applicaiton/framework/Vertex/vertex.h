@@ -2,10 +2,12 @@
 #include "framework/kvulkan.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
+#include "framework/Buffer/buffer.h"
 namespace kvs
 {
     class LogicDevice;
     class PhysicalDevice;
+    class Command;
 
     struct VertexInfo
     {
@@ -50,20 +52,20 @@ namespace kvs
     private:
     };
 
-    class VertexBuffer {
+    class VertexBuffer{
     public:
         VertexBuffer(LogicDevice& logicDevice, PhysicalDevice& physicalDevice, Vertex& vertex);
 
-        void AllocateVertexBuffer();
+        void AllocateVertexBuffer(Command& command, VkQueue& queue);
         void FreeVertexBuffer();
-        VkBuffer m_vertexBuffer;
+
+        void CopyBuffer(Buffer& m_StagingBuffer, Command& command, VkDeviceSize size, VkQueue& queue);
+
         Vertex& m_vertex;
+        Buffer m_VertexBuffer;
     private:
         VkDevice& m_device;
         VkPhysicalDevice& m_pDevice;
-
-        VkDeviceMemory m_deviceMemory;
-
     };
 
 } // namespace kvs

@@ -1,6 +1,7 @@
 #include "vertex.h"
 #include "LogicDevice/logicdevice.h"
 #include "PhysicalDevice/physicaldevice.h"
+#include "CommandBuffer/commandbuffer.h"
 namespace kvs{
 
 	VertexBuffer::VertexBuffer(LogicDevice& logicDevice, PhysicalDevice& physicalDevice, Vertex& vertex) :
@@ -11,60 +12,64 @@ namespace kvs{
 		
 	}
 
-	void VertexBuffer::AllocateVertexBuffer()
+	void VertexBuffer::AllocateVertexBuffer(Command& command, VkQueue& queue)
 	{
-		VkBufferCreateInfo bufferCreateInfo{};
-		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferCreateInfo.size = sizeof(m_vertex.m_vertexs[0]) * m_vertex.m_vertexs.size();
-		bufferCreateInfo.usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (vkCreateBuffer(m_device, &bufferCreateInfo, nullptr, &m_vertexBuffer) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create buffer");
-		}
-
-		VkMemoryRequirements requirements;
-		vkGetBufferMemoryRequirements(m_device, m_vertexBuffer, &requirements);
-
-		VkPhysicalDeviceMemoryProperties memory_properties{};
-		vkGetPhysicalDeviceMemoryProperties(m_pDevice, &memory_properties);
-		uint32_t i = 0;
-		for (; i < memory_properties.memoryTypeCount; i++) {
-			if ((requirements.memoryTypeBits & (1 << i)) && 
-				(memory_properties.memoryTypes[i].propertyFlags & 
-				(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
-				break;
-			}
-		}
-
-		VkMemoryAllocateInfo allocateInfo{};
-		allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocateInfo.memoryTypeIndex = i;
-		allocateInfo.allocationSize = requirements.size;
-
-		if (vkAllocateMemory(m_device, &allocateInfo, nullptr, &m_deviceMemory) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate memory");
-		}
-
-		if (vkBindBufferMemory(m_device, m_vertexBuffer, m_deviceMemory, 0) != VK_SUCCESS) {
-			throw std::runtime_error("failed to Bind buffer memory");
-		}
+		VkDeviceSize size = sizeof(m_vertex.m_vertexs[0]) * m_vertex.m_vertexs.size();
+		Buffer m_StagingBuffer;
+		m_StagingBuffer.CreateBuffer(m_device, m_pDevice, size, VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+			VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 		void* data;
-		if (vkMapMemory(m_device, m_deviceMemory, 0, bufferCreateInfo.size, 0, &data) != VK_SUCCESS) {
+		if (vkMapMemory(m_device, m_StagingBuffer.GetMemory(), 0, size, 0, &data) != VK_SUCCESS) {
 			throw std::runtime_error("failed to map memory");
 		}
-		memcpy(data, m_vertex.m_vertexs.data(), (size_t)bufferCreateInfo.size);
-		vkUnmapMemory(m_device, m_deviceMemory);
+		memcpy(data, m_vertex.m_vertexs.data(), (size_t)size);
+		vkUnmapMemory(m_device, m_StagingBuffer.GetMemory());
+
+		m_VertexBuffer.CreateBuffer(m_device, m_pDevice, size, VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			);
+
+		CopyBuffer(m_StagingBuffer, command, size, queue);
+
+		m_StagingBuffer.FreeBufferAndMemory(m_device);
 	}
 
 	void VertexBuffer::FreeVertexBuffer()
 	{
-		vkFreeMemory(m_device, m_deviceMemory, nullptr);
-		vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
+		m_VertexBuffer.FreeBufferAndMemory(m_device);
 
 	}
 
+	void VertexBuffer::CopyBuffer(Buffer& m_StagingBuffer, Command& command, VkDeviceSize size, VkQueue& queue)
+	{
+		VkCommandBufferAllocateInfo allInfo{};
+		allInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allInfo.commandPool = command.m_pool;
+		allInfo.commandBufferCount = 1;
+		allInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
+		VkCommandBuffer cmdBuffer;
+		vkAllocateCommandBuffers(m_device, &allInfo, &cmdBuffer);
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+
+		VkBufferCopy bufferCopy{};
+		bufferCopy.size = size;
+		vkCmdCopyBuffer(cmdBuffer, m_StagingBuffer.GetBuffer(), m_VertexBuffer.GetBuffer(), 1, &bufferCopy);
+
+		vkEndCommandBuffer(cmdBuffer);
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &cmdBuffer;
+		vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(queue);
+
+		vkFreeCommandBuffers(m_device, command.m_pool, 1, &cmdBuffer);
+	}
 
 }

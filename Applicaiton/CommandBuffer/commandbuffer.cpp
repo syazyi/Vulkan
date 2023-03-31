@@ -94,7 +94,7 @@ namespace kvs
         rect2d.offset = { 0, 0 };
         vkCmdSetScissor(drawCommandBuffer, 0, 1, &rect2d);
 
-        VkBuffer buffers[] = { vertex_buffer.m_vertexBuffer };
+        VkBuffer buffers[] = { vertex_buffer.m_VertexBuffer.GetBuffer()};
         VkDeviceSize deviceSize[] = { 0 };
         vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, buffers, deviceSize);
 

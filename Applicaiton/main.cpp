@@ -81,17 +81,18 @@ int main(int argc, char** argv){
     };
     kvs::Vertex test_vertex(vertices);
 
+    kvs::Command commandSystem(logic_device);
+    commandSystem.CreateCommand(physical_device.m_hasFindQueueFamily);
+    //commandSystem.RecordDrawCommand(0, pipeline, swap_chain, vertex_buffer);
+
+
     kvs::VertexBuffer vertex_buffer(logic_device, physical_device, test_vertex);
-    vertex_buffer.AllocateVertexBuffer();
+    vertex_buffer.AllocateVertexBuffer(commandSystem, logic_device.m_GraphicsQueue);
 
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);
     pipeline.CreatePipeline(vertex_buffer);
     pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D());
 
-
-    kvs::Command commandSystem(logic_device);
-    commandSystem.CreateCommand(physical_device.m_hasFindQueueFamily);
-    //commandSystem.RecordDrawCommand(0, pipeline, swap_chain, vertex_buffer);
 
     kvs::App app(logic_device, commandSystem);
     app.CreateSyncObject();
