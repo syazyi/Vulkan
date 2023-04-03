@@ -7,13 +7,14 @@ namespace kvs
     class LogicDevice;
     class SwapChain;
     class VertexBuffer;
+    class Descriptor;
 
     class GraphicPipeline{
     public:
         GraphicPipeline(LogicDevice& device, SwapChain& swapchain, const std::vector<uint32_t>& vertex_shader, const std::vector<uint32_t>& fragment_shader);
         ~GraphicPipeline(){}
 
-        void CreatePipeline(VertexBuffer& vertex_buffer);
+        void CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor);
         void DestroyPipeline();
 
         void CreateRenderPass();
@@ -52,6 +53,8 @@ namespace kvs
         VkPipelineColorBlendStateCreateInfo RequestColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState& colorAttachment);
 
         VkPipelineDynamicStateCreateInfo EnableDynamicState(std::vector<VkDynamicState>& states);
+    public:
+        VkPipelineLayout m_layout;
     private:
 
         VkDevice& m_device;
@@ -62,7 +65,6 @@ namespace kvs
         //it Only have one render pass now
         VkRenderPass m_renderpass;
 
-        VkPipelineLayout m_layout;
 
         VkPipeline m_pipeline;
 

@@ -2,6 +2,7 @@
 #include "framework/kvulkan.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
+#include "glm/mat4x4.hpp"
 #include "framework/Buffer/buffer.h"
 namespace kvs
 {
@@ -15,6 +16,7 @@ namespace kvs
         glm::vec3 Color;
     };
     
+
     using VertexIndexInfo = uint16_t;
 
     class Vertex {

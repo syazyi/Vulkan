@@ -5,6 +5,8 @@
 #include "ImageView/imageview.h"
 #include "window/include/window.h"
 #include "framework/Vertex/vertex.h"
+#include "Uniform/uniform.h"
+#include "framework/Descriptor/descriptor.h"
 namespace kvs
 {
     App::App(LogicDevice& device, Command& command) : m_device(device.GetLogicDevice()), m_command(command), 
@@ -44,7 +46,7 @@ namespace kvs
         }
     }
 
-    void App::DrawFrame(GraphicPipeline& drawPass, SwapChain& swapchain, ImageView& imageView, VertexBuffer& vertex_buffer)
+    void App::DrawFrame(GraphicPipeline& drawPass, SwapChain& swapchain, ImageView& imageView, VertexBuffer& vertex_buffer, Uniform& uniform, Descriptor& descriptor)
     {
         vkWaitForFences(m_device, 1, &m_oneFrame[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -60,7 +62,10 @@ namespace kvs
         vkResetFences(m_device, 1, &m_oneFrame[currentFrame]);
 
         vkResetCommandBuffer(m_command.m_drawCommandBuffer[currentFrame], 0);
-        m_command.RecordDrawCommand(imageIndex, drawPass, swapchain, vertex_buffer);
+
+        uniform.UpdateUniform(swapchain);
+
+        m_command.RecordDrawCommand(imageIndex, drawPass, swapchain, vertex_buffer, descriptor);
 
         VkSubmitInfo subInfo{};
         subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

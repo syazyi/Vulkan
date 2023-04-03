@@ -2,6 +2,7 @@
 #include "LogicDevice/logicdevice.h"
 #include "SwapChain/swapchain.h"
 #include "GraphicPipeline/graphicpipeline.h"
+#include "framework/Descriptor/descriptor.h"
 namespace kvs
 {
     Command::Command(LogicDevice& device) : m_device(device.GetLogicDevice()){
@@ -50,7 +51,7 @@ namespace kvs
         }
     }
 
-    void Command::RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer)
+    void Command::RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer, Descriptor& descriptor)
     {
         auto drawCommandBuffer = m_drawCommandBuffer[currentFrame];
         VkCommandBufferBeginInfo commandBufferBeginInfo{};
@@ -100,6 +101,8 @@ namespace kvs
 
         auto& indexBuffer = vertex_buffer.m_IndexBuffer.GetBuffer();
         vkCmdBindIndexBuffer(drawCommandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+        vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, drawPass.m_layout, 0, 1, &descriptor.m_Sets[currentFrame], 0, nullptr);
 
         //vkCmdDraw(drawCommandBuffer, vertex_buffer.m_vertex.m_vertexs.size(), 1, 0, 0);
         vkCmdDrawIndexed(drawCommandBuffer, vertex_buffer.m_vertex.m_vertexIndices.size(), 1, 0, 0, 0);

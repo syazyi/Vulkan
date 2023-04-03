@@ -4,6 +4,7 @@
 #include "SwapChain/swapchain.h"
 
 #include "framework/Vertex/vertex.h"
+#include "framework/Descriptor/descriptor.h"
 namespace kvs
 {
     
@@ -15,13 +16,15 @@ namespace kvs
 
     }
 
-    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer)
+    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor)
     {
         //create render pass
         CreateRenderPass();
         //create pipeline layout
         VkPipelineLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        layoutCreateInfo.setLayoutCount = 1;
+        layoutCreateInfo.pSetLayouts = &descriptor.m_DesSetLayout;
 
         if (vkCreatePipelineLayout(m_device, &layoutCreateInfo, nullptr, &m_layout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout");
@@ -269,7 +272,7 @@ namespace kvs
         createInfo.rasterizerDiscardEnable = VK_FALSE;
         createInfo.polygonMode = VK_POLYGON_MODE_FILL;
         createInfo.cullMode = VkCullModeFlagBits::VK_CULL_MODE_BACK_BIT;
-        createInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        createInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         createInfo.depthBiasEnable = VK_FALSE;
         createInfo.lineWidth = 1.0f;
 

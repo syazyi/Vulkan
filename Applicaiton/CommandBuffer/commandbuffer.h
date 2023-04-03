@@ -6,12 +6,13 @@ namespace kvs
     class LogicDevice;
     class SwapChain;
     class GraphicPipeline;
+    class Descriptor;
     class Command {
     public:
         Command(LogicDevice& device);
 
         void CreateCommand(QueueFamilyIndices indices);
-        void RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer);
+        void RecordDrawCommand(uint32_t index, GraphicPipeline& drawPass, SwapChain& swapchain, VertexBuffer& vertex_buffer, Descriptor& descriptor);
         void DestroyCommand();
 
         VkCommandPool m_pool;

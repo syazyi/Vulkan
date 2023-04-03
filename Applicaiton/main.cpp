@@ -13,6 +13,8 @@
 #include "CommandBuffer/commandbuffer.h"
 #include "framework/app.h"
 #include "framework/Vertex/vertex.h"
+#include "framework/Uniform/uniform.h"
+#include "framework/Descriptor/descriptor.h"
 
 std::vector<uint32_t> compile_file(const std::string& source_name,
                                    shaderc_shader_kind kind,
@@ -94,24 +96,33 @@ int main(int argc, char** argv){
     vertex_buffer.AllocateVertexBuffer(commandSystem, logic_device.m_GraphicsQueue);
     vertex_buffer.AllocateIndexBuffer(commandSystem, logic_device.m_GraphicsQueue);
 
+    kvs::Uniform uniform(logic_device);
+    uniform.CreateUniformBuffer(physical_device.GetPhysicalDevice());
+    
+    kvs::Descriptor descroptor(logic_device);
+    descroptor.CreateSetLayout(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
+    descroptor.CreateDescriptor(uniform);
 
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);
-    pipeline.CreatePipeline(vertex_buffer);
+    pipeline.CreatePipeline(vertex_buffer, descroptor);
     pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D());
 
 
     kvs::App app(logic_device, commandSystem);
     app.CreateSyncObject();
 
+
     
     while (!glfwWindowShouldClose(glfw_window.GetWindow())) {
         glfwPollEvents();
-        app.DrawFrame(pipeline, swap_chain, image_view, vertex_buffer);
+        app.DrawFrame(pipeline, swap_chain, image_view, vertex_buffer, uniform, descroptor);
     }
     vkDeviceWaitIdle(logic_device.GetLogicDevice());
 
     swap_chain.CleanUpSwapChain(image_view, pipeline);
 
+    descroptor.ClearUpDescriptor();
+    uniform.ClearUpUniform();
     vertex_buffer.FreeIndexBuffer();
     vertex_buffer.FreeVertexBuffer();
 
