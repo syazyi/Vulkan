@@ -15,6 +15,8 @@ set(shaderc_include ${3RDPART_DIRECTORY}/shaderc/include)
 set(shaderc_libd ${3RDPART_DIRECTORY}/shaderc/lib/shaderc_combinedd.lib)
 set(shaderc_lib ${3RDPART_DIRECTORY}/shaderc/lib/shaderc_combined.lib)
 
+set(stb_image_header ${3RDPART_DIRECTORY}/stb)
+
 add_subdirectory(3rdPart)
 
 add_subdirectory(Applicaiton)
