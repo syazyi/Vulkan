@@ -45,7 +45,7 @@ namespace kvs
         memcpy(m_MapData[currentFrame], &mat, sizeof(mat));
     }
 
-    void Uniform::ClearUpUniform()
+    void Uniform::CleanUpUniform()
     {
         for (auto& buffer : m_Buffers) {
             vkUnmapMemory(m_Device, buffer.GetMemory());

@@ -11,7 +11,7 @@ namespace kvs
 
         void CreateSetLayout(VkDescriptorType type, VkShaderStageFlags stageFlags);
         void CreateDescriptor(Uniform& unifrom);
-        void ClearUpDescriptor();
+        void CleanUpDescriptor();
         std::vector<VkDescriptorSet> m_Sets;
         VkDescriptorSetLayout m_DesSetLayout;
     private:

@@ -21,6 +21,47 @@ namespace kvs
         DestroyCommandPool();
     }
 
+    void Command::BeginEndSingleTimeCommands(LogicDevice& logic_device, std::function<void(void)> func)
+    {
+        auto cmdBuffer = BeginSingleTimeCommands();
+        func();
+        EndSingleTimeCommands(cmdBuffer, logic_device.m_GraphicsQueue);
+    }
+
+    VkCommandBuffer Command::BeginSingleTimeCommands()
+    {
+
+        VkCommandBufferAllocateInfo allInfo{};
+        allInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allInfo.commandPool = m_pool;
+        allInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allInfo.commandBufferCount = 1;
+
+        VkCommandBuffer cmdBuffer;
+        vkAllocateCommandBuffers(m_device, &allInfo, &cmdBuffer);
+
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+
+        return cmdBuffer;
+    }
+
+    void Command::EndSingleTimeCommands(VkCommandBuffer& cmdBuffer, VkQueue& queue)
+    {
+        vkEndCommandBuffer(cmdBuffer);
+
+        VkSubmitInfo subInfo{};
+        subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        subInfo.commandBufferCount = 1;
+        subInfo.pCommandBuffers = &cmdBuffer;
+        vkQueueSubmit(queue, 1, &subInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(queue);
+
+        vkFreeCommandBuffers(m_device, m_pool, 1, &cmdBuffer);
+    }
+
     void Command::CreateCommandPool(QueueFamilyIndices& indices)
     {
         VkCommandPoolCreateInfo createInfo{};

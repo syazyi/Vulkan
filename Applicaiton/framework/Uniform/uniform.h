@@ -23,7 +23,7 @@ namespace kvs
 
         void UpdateUniform(SwapChain& swap_chain);
 
-        void ClearUpUniform();
+        void CleanUpUniform();
     public:
         std::vector<Buffer> m_Buffers;
     private:

@@ -73,7 +73,7 @@ namespace kvs
         }
     }
 
-    void Descriptor::ClearUpDescriptor()
+    void Descriptor::CleanUpDescriptor()
     {
         vkDestroyDescriptorPool(m_Device, m_Pool, nullptr);
         vkDestroyDescriptorSetLayout(m_Device, m_DesSetLayout, nullptr);
