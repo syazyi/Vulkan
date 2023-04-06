@@ -92,8 +92,7 @@ int main(int argc, char** argv){
     kvs::Vertex test_vertex(vertices, indices);
 
     //load texture
-    kvs::Texture nahada("../../Asset/Texture/NahidaClip.png");
-
+    kvs::Texture nahida("../../Asset/Texture/NahidaClip.png");
 
     //set command
     kvs::Command commandSystem(logic_device);
@@ -101,10 +100,15 @@ int main(int argc, char** argv){
     //commandSystem.RecordDrawCommand(0, pipeline, swap_chain, vertex_buffer);
 
 
-    //set vertex buffer and 
+    //set vertex buffer and texture image
     kvs::VertexBuffer vertex_buffer(logic_device, physical_device, test_vertex);
     vertex_buffer.AllocateVertexBuffer(commandSystem, logic_device.m_GraphicsQueue);
     vertex_buffer.AllocateIndexBuffer(commandSystem, logic_device.m_GraphicsQueue);
+
+    kvs::TextureImage texture_image(logic_device);
+    texture_image.CreateTextureImage(physical_device, commandSystem, nahida);
+    texture_image.CreateImageView(VK_FORMAT_R8G8B8A8_SRGB);
+    texture_image.CreateSampler(physical_device);
 
     //set unifrom
     kvs::Uniform uniform(logic_device);
@@ -134,6 +138,7 @@ int main(int argc, char** argv){
     //clean up
     swap_chain.CleanUpSwapChain(image_view, pipeline);
 
+    texture_image.CleanUp();
     descroptor.CleanUpDescriptor();
     uniform.CleanUpUniform();
     vertex_buffer.FreeIndexBuffer();

@@ -29,6 +29,7 @@ namespace kvs
         createInfo.pQueueCreateInfos = qCreateInfos.data();
 
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+        physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
         createInfo.pEnabledFeatures = &physicalDeviceFeatures;
       
         createInfo.enabledExtensionCount = PhysicalDevice::m_deviceExtensionsSupport.size();

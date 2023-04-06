@@ -85,8 +85,28 @@ namespace kvs
 
 	void Image::ClearUp(VkDevice& device)
 	{
+		vkDestroyImageView(device, m_ImageView, nullptr);
 		vkFreeMemory(device, m_ImageMemory, nullptr);
 		vkDestroyImage(device, m_Image, nullptr);
+	}
+
+	void Image::CreateImageView(VkDevice& device, VkFormat format)
+	{
+		VkImageViewCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = m_Image;
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = format;
+		//createInfo.components;
+		createInfo.subresourceRange.aspectMask = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.layerCount = 1;
+		createInfo.subresourceRange.levelCount = 1;
+
+		if (vkCreateImageView(device, &createInfo, nullptr, &m_ImageView) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create image view");
+		}
 	}
 
 	TextureImage::TextureImage(LogicDevice& logic_device) : m_Device(logic_device.GetLogicDevice()), m_GraphicQueue(logic_device.m_GraphicsQueue)
@@ -192,6 +212,40 @@ namespace kvs
 	void TextureImage::CleanUp()
 	{
 		m_Image.ClearUp(m_Device);
+		vkDestroySampler(m_Device, m_Sampler, nullptr);
+	}
+
+	void TextureImage::CreateImageView(VkFormat format)
+	{
+		m_Image.CreateImageView(m_Device, format);
+	}
+
+	void TextureImage::CreateSampler(PhysicalDevice& physical)
+	{
+		VkSamplerCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		createInfo.magFilter = VK_FILTER_LINEAR;
+		createInfo.minFilter = VK_FILTER_LINEAR;
+		createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		createInfo.mipLodBias = 0.0f;
+		createInfo.anisotropyEnable = VK_TRUE;
+
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(physical.GetPhysicalDevice(), &properties);
+		createInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+		createInfo.compareEnable = VK_FALSE;
+		createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		createInfo.minLod = 0.0f;
+		createInfo.maxLod = 0.0f;
+		createInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+		createInfo.unnormalizedCoordinates = VK_FALSE;
+
+		if (vkCreateSampler(m_Device, &createInfo, nullptr, &m_Sampler) != VK_SUCCESS) {
+			throw "failed to create sampler.";
+		}
 	}
 
 } // namespace kvs

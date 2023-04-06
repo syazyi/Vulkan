@@ -26,7 +26,9 @@ namespace kvs
         Image() = default;
         void Createimage(VkDevice& device, VkPhysicalDevice& pDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags flags);
         void ClearUp(VkDevice& device);
+        void CreateImageView(VkDevice& device, VkFormat format);
         VkImage m_Image;
+        VkImageView m_ImageView;
         VkDeviceMemory m_ImageMemory;
 
     private:
@@ -40,10 +42,13 @@ namespace kvs
         void TransitionImageLayout(VkCommandBuffer& cmdBuffer, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
         void CopyTextureImage(VkCommandBuffer& cmdBuffer, VkBuffer& srcBuffer, uint32_t width, uint32_t height);
         void CleanUp();
+        void CreateImageView(VkFormat format);
+        void CreateSampler(PhysicalDevice& physical);
     private:
         VkDevice& m_Device;
-        Image m_Image;
         VkQueue& m_GraphicQueue;
+        Image m_Image;
+        VkSampler m_Sampler;
     };
 
 } // namespace kvs
