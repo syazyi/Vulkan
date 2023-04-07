@@ -81,10 +81,10 @@ int main(int argc, char** argv){
     auto fragmentShader = compile_file("main", shaderc_shader_kind::shaderc_fragment_shader, frag_shader_string);
     
     std::vector<kvs::VertexInfo> vertices = {
-        {{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}
+        {{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f},{1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f},{0.0f, 0.0f}},
+        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f},{0.0f, 1.0f}},
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}
     };
     std::vector<kvs::VertexIndexInfo> indices = {
         0, 1, 2, 0, 2, 3
@@ -116,7 +116,7 @@ int main(int argc, char** argv){
     
     kvs::Descriptor descroptor(logic_device);
     descroptor.CreateSetLayout(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
-    descroptor.CreateDescriptor(uniform);
+    descroptor.CreateDescriptor(uniform, texture_image);
 
     //set pipeline
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);

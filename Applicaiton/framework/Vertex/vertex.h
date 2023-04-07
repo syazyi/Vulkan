@@ -14,6 +14,7 @@ namespace kvs
     {
         glm::vec2 Pos;
         glm::vec3 Color;
+        glm::vec2 TexCoord;
     };
     
 
@@ -38,7 +39,7 @@ namespace kvs
         }
 
         auto GetAttributeDescription() {
-            std::vector<VkVertexInputAttributeDescription> attr(2);
+            std::vector<VkVertexInputAttributeDescription> attr(3);
             attr[0].binding = 0;
             attr[0].location = 0;
             attr[0].format = VK_FORMAT_R32G32_SFLOAT;
@@ -48,6 +49,11 @@ namespace kvs
             attr[1].location = 1;
             attr[1].format = VK_FORMAT_R32G32B32_SFLOAT;
             attr[1].offset = offsetof(VertexInfo, Color);
+
+            attr[2].binding = 0;
+            attr[2].location = 2;
+            attr[2].format = VK_FORMAT_R32G32_SFLOAT;
+            attr[2].offset = offsetof(VertexInfo, TexCoord);
 
             return attr;
         }

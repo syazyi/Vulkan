@@ -44,11 +44,11 @@ namespace kvs
         void CleanUp();
         void CreateImageView(VkFormat format);
         void CreateSampler(PhysicalDevice& physical);
+        Image m_Image;
+        VkSampler m_Sampler;
     private:
         VkDevice& m_Device;
         VkQueue& m_GraphicQueue;
-        Image m_Image;
-        VkSampler m_Sampler;
     };
 
 } // namespace kvs
