@@ -5,6 +5,7 @@
 
 #include "framework/Vertex/vertex.h"
 #include "framework/Descriptor/descriptor.h"
+#include "framework/Image/depth.h"
 namespace kvs
 {
     
@@ -16,10 +17,10 @@ namespace kvs
 
     }
 
-    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor)
+    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor, Depth& depth)
     {
         //create render pass
-        CreateRenderPass();
+        CreateRenderPass(depth.depthFormat);
         //create pipeline layout
         VkPipelineLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -111,7 +112,7 @@ namespace kvs
 
     }
 
-    void GraphicPipeline::CreateRenderPass()
+    void GraphicPipeline::CreateRenderPass(VkFormat depthFormat)
     {
         VkAttachmentDescription attachmentDescription{};
         attachmentDescription.format = m_swapChain.m_format.format;
@@ -128,26 +129,42 @@ namespace kvs
         attachReference.attachment = 0;
         attachReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        VkAttachmentDescription depthAttDescription{};
+        depthAttDescription.format = depthFormat;
+        depthAttDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthRef{};
+        depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthRef.attachment = 1;
 
         VkSubpassDescription subpassDescroption{};
         subpassDescroption.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassDescroption.colorAttachmentCount = 1;
         subpassDescroption.pColorAttachments = &attachReference;
+        subpassDescroption.pDepthStencilAttachment = &depthRef;
 
+        std::array<VkAttachmentDescription, 2> attachments{ attachmentDescription, depthAttDescription };
         VkRenderPassCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        createInfo.attachmentCount = 1;
-        createInfo.pAttachments = &attachmentDescription;
+        createInfo.attachmentCount = attachments.size();
+        createInfo.pAttachments = attachments.data();
         createInfo.subpassCount = 1;
         createInfo.pSubpasses = &subpassDescroption;
+        
 
         VkSubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.dstSubpass = 0;
-        dependency.srcStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependency.srcStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.dstStageMask = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependency.srcAccessMask = 0;
-        dependency.dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependency.dstAccessMask = VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
         createInfo.dependencyCount = 1;
         createInfo.pDependencies = &dependency;
@@ -163,21 +180,22 @@ namespace kvs
         vkDestroyRenderPass(m_device, m_renderpass, nullptr);
     }
 
-    void GraphicPipeline::CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect)
+    void GraphicPipeline::CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect, Depth& depth)
     {
         //createFramebuffers
         auto imageViewSize = imageViews.size();
         m_framebuffers.resize(imageViewSize);
         for (size_t i = 0; i < imageViewSize; i++) {
             std::vector<VkImageView> imageViewsNeed = {
-                imageViews[i]
+                imageViews[i], 
+                depth.m_DepthImageView
             };
 
             VkFramebufferCreateInfo framebufferCIF{};
             framebufferCIF.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 
             framebufferCIF.renderPass = m_renderpass;
-            framebufferCIF.attachmentCount = 1;
+            framebufferCIF.attachmentCount = imageViewsNeed.size();
             framebufferCIF.pAttachments = imageViewsNeed.data();
             framebufferCIF.width = rect.extent.width;
             framebufferCIF.height = rect.extent.height;
@@ -292,8 +310,12 @@ namespace kvs
     {
         VkPipelineDepthStencilStateCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        createInfo.depthTestEnable = VK_FALSE;
-        createInfo.stencilTestEnable = VK_FALSE;
+        createInfo.depthTestEnable = VK_TRUE;
+        createInfo.depthWriteEnable = VK_TRUE;
+        createInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+        createInfo.depthBoundsTestEnable = VK_FALSE;
+
+        createInfo.stencilTestEnable = VK_TRUE;
         return createInfo;
     }
 

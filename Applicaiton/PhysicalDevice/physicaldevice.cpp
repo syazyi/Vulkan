@@ -95,6 +95,22 @@ namespace kvs
         return detail;
     }
 
+    VkFormat PhysicalDevice::GetDepthFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+    {
+        for (auto& format : candidates) {
+            VkFormatProperties properties;
+            vkGetPhysicalDeviceFormatProperties(m_device, format, &properties);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) {
+                return format;
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+        throw std::runtime_error("not find suitable format");
+    }
+
     void PhysicalDevice::DebugPrintPhysicalDeviceInfo(const VkPhysicalDeviceProperties& pro, const VkPhysicalDeviceFeatures& fea)
     {
 #ifndef NDEBUG

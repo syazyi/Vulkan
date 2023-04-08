@@ -29,6 +29,8 @@ namespace kvs
         uint32_t EvaluateDeviceScore(const VkPhysicalDevice& device);
 
         SwapChainSupportDetail GetSwapChainSupportDetail();
+        VkFormat GetDepthFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
     public:
         inline static std::vector<const char*> m_deviceExtensionsSupport{};
         

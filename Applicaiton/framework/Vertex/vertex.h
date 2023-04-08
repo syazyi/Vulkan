@@ -12,7 +12,7 @@ namespace kvs
 
     struct VertexInfo
     {
-        glm::vec2 Pos;
+        glm::vec3 Pos;
         glm::vec3 Color;
         glm::vec2 TexCoord;
     };
@@ -42,7 +42,7 @@ namespace kvs
             std::vector<VkVertexInputAttributeDescription> attr(3);
             attr[0].binding = 0;
             attr[0].location = 0;
-            attr[0].format = VK_FORMAT_R32G32_SFLOAT;
+            attr[0].format = VK_FORMAT_R32G32B32_SFLOAT;
             attr[0].offset = offsetof(VertexInfo, Pos);
 
             attr[1].binding = 0;

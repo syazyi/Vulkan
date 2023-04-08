@@ -16,6 +16,7 @@
 #include "framework/Uniform/uniform.h"
 #include "framework/Descriptor/descriptor.h"
 #include "framework/Image/image.h"
+#include "framework/Image/depth.h"
 
 std::vector<uint32_t> compile_file(const std::string& source_name,
                                    shaderc_shader_kind kind,
@@ -75,24 +76,33 @@ int main(int argc, char** argv){
     image_view.Create();
 
     //set vertex info
+    //auto vert_shader_string = readFile("C:/games3/VulkanStudy/Vulkan/ShaderSrc/tutorialShader/vert.vert");
+    //auto frag_shader_string = readFile("C:/games3/VulkanStudy/Vulkan/ShaderSrc/tutorialShader/frag.frag");
     auto vert_shader_string = readFile("../../ShaderSrc/tutorialShader/vert.vert");
     auto frag_shader_string = readFile("../../ShaderSrc/tutorialShader/frag.frag");
     auto vertexShader = compile_file("main", shaderc_shader_kind::shaderc_vertex_shader, vert_shader_string);
     auto fragmentShader = compile_file("main", shaderc_shader_kind::shaderc_fragment_shader, frag_shader_string);
     
     std::vector<kvs::VertexInfo> vertices = {
-        {{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f},{1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f},{0.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f},{0.0f, 1.0f}},
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}
+        {{0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},{1.0f, 0.0f}},
+        {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f},{0.0f, 0.0f}},
+        {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f},{0.0f, 1.0f}},
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, 
+
+        {{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f, 1.0f},{1.0f, 0.0f}},
+        {{0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f},{0.0f, 0.0f}},
+        {{-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f},{0.0f, 1.0f}},
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
     };
     std::vector<kvs::VertexIndexInfo> indices = {
-        0, 1, 2, 0, 2, 3
+        0, 1, 2, 0, 2, 3, 
+        4, 5, 6, 4, 6, 7
     };
     kvs::Vertex test_vertex(vertices, indices);
 
     //load texture
     kvs::Texture nahida("../../Asset/Texture/NahidaClip.png");
+    //kvs::Texture nahida("C:/games3/VulkanStudy/Vulkan/Asset/Texture/NahidaClip.png");
 
     //set command
     kvs::Command commandSystem(logic_device);
@@ -110,6 +120,9 @@ int main(int argc, char** argv){
     texture_image.CreateImageView(VK_FORMAT_R8G8B8A8_SRGB);
     texture_image.CreateSampler(physical_device);
 
+    kvs::Depth depth_Image;
+    depth_Image.CreateDepthResource(logic_device, swap_chain, physical_device, commandSystem);
+
     //set unifrom
     kvs::Uniform uniform(logic_device);
     uniform.CreateUniformBuffer(physical_device.GetPhysicalDevice());
@@ -120,8 +133,8 @@ int main(int argc, char** argv){
 
     //set pipeline
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);
-    pipeline.CreatePipeline(vertex_buffer, descroptor);
-    pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D());
+    pipeline.CreatePipeline(vertex_buffer, descroptor, depth_Image);
+    pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D(), depth_Image);
 
 
     kvs::App app(logic_device, commandSystem);
@@ -137,7 +150,7 @@ int main(int argc, char** argv){
 
     //clean up
     swap_chain.CleanUpSwapChain(image_view, pipeline);
-
+    depth_Image.DestroyDepthResource(logic_device.GetLogicDevice());
     texture_image.CleanUp();
     descroptor.CleanUpDescriptor();
     uniform.CleanUpUniform();

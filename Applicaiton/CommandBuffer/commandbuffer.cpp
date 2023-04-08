@@ -114,9 +114,15 @@ namespace kvs
         auto extent = swapchain.ChooseSwapExtent();
         renderPassBeginInfo.renderArea.extent = extent;
 
-        VkClearValue value{0.0f, 0.0f, 0.0f, 1.0f};
-        renderPassBeginInfo.clearValueCount = 1;
-        renderPassBeginInfo.pClearValues = &value;
+        VkClearValue value;
+        value.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+        VkClearValue depthValue;
+        depthValue.depthStencil = { 1.0f, 0 };
+
+        std::array<VkClearValue, 2> values{ value, depthValue };
+        renderPassBeginInfo.clearValueCount = values.size();
+        renderPassBeginInfo.pClearValues = values.data();
         vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, drawPass.GetPipeline());

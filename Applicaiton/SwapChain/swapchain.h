@@ -8,6 +8,7 @@ namespace kvs
     class WindowSurface;
     class ImageView;
     class GraphicPipeline;
+    class Depth;
 
     class SwapChain
     {

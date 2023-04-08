@@ -8,16 +8,17 @@ namespace kvs
     class SwapChain;
     class VertexBuffer;
     class Descriptor;
+    class Depth;
 
     class GraphicPipeline{
     public:
         GraphicPipeline(LogicDevice& device, SwapChain& swapchain, const std::vector<uint32_t>& vertex_shader, const std::vector<uint32_t>& fragment_shader);
         ~GraphicPipeline(){}
 
-        void CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor);
+        void CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor, Depth& depth);
         void DestroyPipeline();
 
-        void CreateRenderPass();
+        void CreateRenderPass(VkFormat depthFormat);
         void DestroyRenderPass();
 
         VkRenderPass& GetRenderPass() {
@@ -32,7 +33,7 @@ namespace kvs
             return m_framebuffers;
         }
 
-        void CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect);
+        void CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect, Depth& depth);
         void DestroyFrameBuffer();
         VkRect2D RequestVkRect2D();
 

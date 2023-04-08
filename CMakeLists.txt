@@ -17,6 +17,8 @@ set(shaderc_lib ${3RDPART_DIRECTORY}/shaderc/lib/shaderc_combined.lib)
 
 set(stb_image_header ${3RDPART_DIRECTORY}/stb)
 
+#set output dir
+set(EXECUTABLE_OUTPUT_PATH ${DEMO_ROOR_DIRECTORY}/bin)
 add_subdirectory(3rdPart)
 
 add_subdirectory(Applicaiton)
