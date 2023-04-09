@@ -83,7 +83,7 @@ int main(int argc, char** argv){
     auto vertexShader = compile_file("main", shaderc_shader_kind::shaderc_vertex_shader, vert_shader_string);
     auto fragmentShader = compile_file("main", shaderc_shader_kind::shaderc_fragment_shader, frag_shader_string);
     
-    std::vector<kvs::VertexInfo> vertices = {
+ /*   std::vector<kvs::VertexInfo> vertices = {
         {{0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},{1.0f, 0.0f}},
         {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f},{0.0f, 0.0f}},
         {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f},{0.0f, 1.0f}},
@@ -97,12 +97,14 @@ int main(int argc, char** argv){
     std::vector<kvs::VertexIndexInfo> indices = {
         0, 1, 2, 0, 2, 3, 
         4, 5, 6, 4, 6, 7
-    };
-    kvs::Vertex test_vertex(vertices, indices);
+    };*/
+    kvs::Vertex test_vertex;
+    test_vertex.LoadObj("../../Asset/Model/frog.obj");
 
     //load texture
-    kvs::Texture nahida("../../Asset/Texture/NahidaClip.png");
+    //kvs::Texture nahida("../../Asset/Texture/NahidaClip.png");
     //kvs::Texture nahida("C:/games3/VulkanStudy/Vulkan/Asset/Texture/NahidaClip.png");
+    kvs::Texture frog("../../Asset/Texture/frog.png");
 
     //set command
     kvs::Command commandSystem(logic_device);
@@ -116,7 +118,7 @@ int main(int argc, char** argv){
     vertex_buffer.AllocateIndexBuffer(commandSystem, logic_device.m_GraphicsQueue);
 
     kvs::TextureImage texture_image(logic_device);
-    texture_image.CreateTextureImage(physical_device, commandSystem, nahida);
+    texture_image.CreateTextureImage(physical_device, commandSystem, frog);
     texture_image.CreateImageView(VK_FORMAT_R8G8B8A8_SRGB);
     texture_image.CreateSampler(physical_device);
 

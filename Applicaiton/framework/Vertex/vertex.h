@@ -18,10 +18,11 @@ namespace kvs
     };
     
 
-    using VertexIndexInfo = uint16_t;
+    using VertexIndexInfo = uint32_t;
 
     class Vertex {
     public:
+        Vertex() = default;
         Vertex(std::vector<VertexInfo>& vertices, std::vector<VertexIndexInfo>& indices) : m_vertexs(vertices), m_vertexIndices(indices){
 
         }
@@ -57,6 +58,8 @@ namespace kvs
 
             return attr;
         }
+           
+        void LoadObj(const char* filePath);
 
         std::vector<VertexInfo> m_vertexs;
         std::vector<VertexIndexInfo> m_vertexIndices;

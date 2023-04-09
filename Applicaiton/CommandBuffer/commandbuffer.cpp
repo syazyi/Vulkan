@@ -147,7 +147,7 @@ namespace kvs
         vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, buffers, deviceSize);
 
         auto& indexBuffer = vertex_buffer.m_IndexBuffer.GetBuffer();
-        vkCmdBindIndexBuffer(drawCommandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(drawCommandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
         vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, drawPass.m_layout, 0, 1, &descriptor.m_Sets[currentFrame], 0, nullptr);
 

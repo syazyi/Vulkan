@@ -21,6 +21,9 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #inlcude stb 
 target_include_directories(${TARGET_NAME} PUBLIC ${stb_image_header})
 
+#inlcude tiny_loader
+target_include_directories(${TARGET_NAME} PUBLIC ${tinyobjloader})
+
 #link shaderc_lib to compile glsl files
 target_include_directories(${TARGET_NAME} PUBLIC ${shaderc_include})
 target_link_libraries(${TARGET_NAME}  PUBLIC debug ${shaderc_libd} optimized ${shaderc_lib})
