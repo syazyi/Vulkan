@@ -3,6 +3,10 @@
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/mat4x4.hpp"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp"
+
 #include "framework/Buffer/buffer.h"
 namespace kvs
 {
@@ -15,6 +19,10 @@ namespace kvs
         glm::vec3 Pos;
         glm::vec3 Color;
         glm::vec2 TexCoord;
+
+        bool operator==(const VertexInfo& other) const {
+            return Pos == other.Pos && Color == other.Color && TexCoord == other.TexCoord;
+        }
     };
     
 
@@ -87,3 +95,10 @@ namespace kvs
     };
 
 } // namespace kvs
+
+template<>
+struct std::hash<kvs::VertexInfo> {
+    size_t operator()(kvs::VertexInfo const& vertex) const {
+        return (hash<glm::vec3>{}(vertex.Pos)) ^ (hash<glm::vec3>{}(vertex.Color)) ^ (hash<glm::vec2>{}(vertex.TexCoord) << 1);
+    }
+};

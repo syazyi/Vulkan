@@ -112,22 +112,29 @@ namespace kvs{
 			throw std::runtime_error(warn + err);
 		}
 
+		auto verteiesSize = attrib.vertices.size() / 3;
+		m_vertexs.resize(verteiesSize, VertexInfo());
+		std::unordered_map<VertexInfo, uint32_t> ver_tex_indeies;
 		for (const auto& shape : shapes) {
 			for (const auto& index : shape.mesh.indices) {
 				VertexInfo vertex{};
-
 				vertex.Pos = {
 					attrib.vertices[3 * index.vertex_index + 0],
 					attrib.vertices[3 * index.vertex_index + 1],
 					attrib.vertices[3 * index.vertex_index + 2]
 				};
+				
 				vertex.TexCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
 					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
 				};
 				vertex.Color = { 1.0f, 1.0f, 1.0f };
-				m_vertexs.push_back(vertex);
-				m_vertexIndices.push_back(m_vertexIndices.size());
+				if (ver_tex_indeies.count(vertex) == 0) {
+					ver_tex_indeies[vertex] = m_vertexs.size();
+					m_vertexs.push_back(vertex);
+				}
+
+				m_vertexIndices.push_back(ver_tex_indeies[vertex]);
 			}
 		}
 	}
