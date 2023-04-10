@@ -13,6 +13,7 @@ namespace kvs
         ~Texture();
         unsigned char * pixels{ nullptr };
         int texWidth, texHeight, texChannels;
+        uint32_t mipLevelCount;
 
         void DestroyTexture();
         VkDeviceSize GetDeviceSize();
@@ -24,9 +25,9 @@ namespace kvs
     class Image {
     public:
         Image() = default;
-        void Createimage(VkDevice& device, VkPhysicalDevice& pDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags flags);
+        void Createimage(VkDevice& device, VkPhysicalDevice& pDevice, uint32_t width, uint32_t height, uint32_t mipCounts, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags flags);
         void ClearUp(VkDevice& device);
-        void CreateImageView(VkDevice& device, VkFormat format);
+        void CreateImageView(VkDevice& device, VkFormat format, uint32_t mipCounts);
         VkImage m_Image;
         VkImageView m_ImageView;
         VkDeviceMemory m_ImageMemory;
@@ -44,11 +45,13 @@ namespace kvs
         void CleanUp();
         void CreateImageView(VkFormat format);
         void CreateSampler(PhysicalDevice& physical);
+        void CreateMipMaps(VkCommandBuffer& cmdBuffer, Texture& texture);
         Image m_Image;
         VkSampler m_Sampler;
     private:
         VkDevice& m_Device;
         VkQueue& m_GraphicQueue;
+        uint32_t m_MipmapLevelCount;
     };
 
 } // namespace kvs
