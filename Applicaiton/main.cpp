@@ -17,6 +17,7 @@
 #include "framework/Descriptor/descriptor.h"
 #include "framework/Image/image.h"
 #include "framework/Image/depth.h"
+#include "framework/Image/msaa.h"
 
 std::vector<uint32_t> compile_file(const std::string& source_name,
                                    shaderc_shader_kind kind,
@@ -125,6 +126,9 @@ int main(int argc, char** argv){
     kvs::Depth depth_Image;
     depth_Image.CreateDepthResource(logic_device, swap_chain, physical_device, commandSystem);
 
+    kvs::Msaa msaa_image;
+    msaa_image.CreateMsaaResource(logic_device, swap_chain, physical_device, commandSystem);
+
     //set unifrom
     kvs::Uniform uniform(logic_device);
     uniform.CreateUniformBuffer(physical_device.GetPhysicalDevice());
@@ -135,8 +139,8 @@ int main(int argc, char** argv){
 
     //set pipeline
     kvs::GraphicPipeline pipeline(logic_device, swap_chain, vertexShader, fragmentShader);
-    pipeline.CreatePipeline(vertex_buffer, descroptor, depth_Image);
-    pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D(), depth_Image);
+    pipeline.CreatePipeline(vertex_buffer, descroptor, depth_Image, msaa_image);
+    pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D(), depth_Image, msaa_image);
 
 
     kvs::App app(logic_device, commandSystem);
@@ -152,6 +156,7 @@ int main(int argc, char** argv){
 
     //clean up
     swap_chain.CleanUpSwapChain(image_view, pipeline);
+    msaa_image.DestroyMsaaResource(logic_device.GetLogicDevice());
     depth_Image.DestroyDepthResource(logic_device.GetLogicDevice());
     texture_image.CleanUp();
     descroptor.CleanUpDescriptor();

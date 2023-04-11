@@ -30,6 +30,7 @@ namespace kvs
 
         SwapChainSupportDetail GetSwapChainSupportDetail();
         VkFormat GetDepthFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        VkSampleCountFlagBits GetMaxUsableSampleCount();
 
     public:
         inline static std::vector<const char*> m_deviceExtensionsSupport{};

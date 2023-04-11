@@ -9,16 +9,17 @@ namespace kvs
     class VertexBuffer;
     class Descriptor;
     class Depth;
+    class Msaa;
 
     class GraphicPipeline{
     public:
         GraphicPipeline(LogicDevice& device, SwapChain& swapchain, const std::vector<uint32_t>& vertex_shader, const std::vector<uint32_t>& fragment_shader);
         ~GraphicPipeline(){}
 
-        void CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor, Depth& depth);
+        void CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor, Depth& depth, Msaa& msaa);
         void DestroyPipeline();
 
-        void CreateRenderPass(VkFormat depthFormat);
+        void CreateRenderPass(VkFormat depthFormat, Msaa& msaa);
         void DestroyRenderPass();
 
         VkRenderPass& GetRenderPass() {
@@ -33,7 +34,7 @@ namespace kvs
             return m_framebuffers;
         }
 
-        void CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect, Depth& depth);
+        void CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect, Depth& depth, Msaa& msaa);
         void DestroyFrameBuffer();
         VkRect2D RequestVkRect2D();
 
@@ -47,7 +48,7 @@ namespace kvs
         VkPipelineViewportStateCreateInfo RequestViewportStateCreateInfo(VkViewport& viewport, VkRect2D scissior);
 
         VkPipelineRasterizationStateCreateInfo RequestRasterizationStateCreateInfo();
-        VkPipelineMultisampleStateCreateInfo RequestMultisampleStateCreateInfo();
+        VkPipelineMultisampleStateCreateInfo RequestMultisampleStateCreateInfo(VkSampleCountFlagBits samples);
         VkPipelineDepthStencilStateCreateInfo RequestDepthStencilStateCreateInfo();
 
         VkPipelineColorBlendAttachmentState RequestColorAttachment();

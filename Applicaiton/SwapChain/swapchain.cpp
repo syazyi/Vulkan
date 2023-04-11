@@ -9,6 +9,7 @@
 #include "ImageView/imageview.h"
 #include "GraphicPipeline/graphicpipeline.h"
 #include "framework/Image/depth.h"
+#include "framework/Image/msaa.h"
 namespace kvs
 {
 	SwapChain::SwapChain(LogicDevice& device, PhysicalDevice& pDevice, WindowSurface& surface) : 
@@ -100,7 +101,7 @@ namespace kvs
 
 		//Depth depth;
 		//depth.CreateDepthResource();
-		pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D(), Depth{});
+		pipeline.CreateFrameBuffer(image_view.m_imageViews, pipeline.RequestVkRect2D(), Depth{}, Msaa{});
 	}
 
 	VkSurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat()

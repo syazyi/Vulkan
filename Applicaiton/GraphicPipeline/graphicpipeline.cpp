@@ -6,6 +6,7 @@
 #include "framework/Vertex/vertex.h"
 #include "framework/Descriptor/descriptor.h"
 #include "framework/Image/depth.h"
+#include "framework/Image/msaa.h"
 namespace kvs
 {
     
@@ -17,10 +18,10 @@ namespace kvs
 
     }
 
-    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor, Depth& depth)
+    void GraphicPipeline::CreatePipeline(VertexBuffer& vertex_buffer, Descriptor& descriptor, Depth& depth, Msaa& msaa)
     {
         //create render pass
-        CreateRenderPass(depth.depthFormat);
+        CreateRenderPass(depth.depthFormat, msaa);
         //create pipeline layout
         VkPipelineLayoutCreateInfo layoutCreateInfo{};
         layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -69,7 +70,7 @@ namespace kvs
         auto viewport = RequestViewportStateCreateInfo(viewportNeed, rect2d);
 
         auto rasterization = RequestRasterizationStateCreateInfo();
-        auto multiSample = RequestMultisampleStateCreateInfo();
+        auto multiSample = RequestMultisampleStateCreateInfo(msaa.m_SampleCount);
         auto depthStencil = RequestDepthStencilStateCreateInfo();
 
         auto colorBlendAttachment = RequestColorAttachment();
@@ -112,17 +113,17 @@ namespace kvs
 
     }
 
-    void GraphicPipeline::CreateRenderPass(VkFormat depthFormat)
+    void GraphicPipeline::CreateRenderPass(VkFormat depthFormat, Msaa& msaa)
     {
         VkAttachmentDescription attachmentDescription{};
         attachmentDescription.format = m_swapChain.m_format.format;
-        attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+        attachmentDescription.samples = msaa.m_SampleCount;
         attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 
         VkAttachmentReference attachReference{};
@@ -131,7 +132,7 @@ namespace kvs
 
         VkAttachmentDescription depthAttDescription{};
         depthAttDescription.format = depthFormat;
-        depthAttDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttDescription.samples = msaa.m_SampleCount;
         depthAttDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -143,13 +144,28 @@ namespace kvs
         depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depthRef.attachment = 1;
 
+        VkAttachmentDescription attachResolveDes{};
+        attachResolveDes.format = m_swapChain.m_format.format;
+        attachResolveDes.samples = VK_SAMPLE_COUNT_1_BIT;
+        attachResolveDes.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachResolveDes.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachResolveDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachResolveDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachResolveDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachResolveDes.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference attResolveRef{};
+        attResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attResolveRef.attachment = 2;
+
         VkSubpassDescription subpassDescroption{};
         subpassDescroption.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassDescroption.colorAttachmentCount = 1;
         subpassDescroption.pColorAttachments = &attachReference;
         subpassDescroption.pDepthStencilAttachment = &depthRef;
+        subpassDescroption.pResolveAttachments = &attResolveRef;
 
-        std::array<VkAttachmentDescription, 2> attachments{ attachmentDescription, depthAttDescription };
+        std::array<VkAttachmentDescription, 3> attachments{ attachmentDescription, depthAttDescription, attachResolveDes };
         VkRenderPassCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         createInfo.attachmentCount = attachments.size();
@@ -180,15 +196,16 @@ namespace kvs
         vkDestroyRenderPass(m_device, m_renderpass, nullptr);
     }
 
-    void GraphicPipeline::CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect, Depth& depth)
+    void GraphicPipeline::CreateFrameBuffer(std::vector<VkImageView>& imageViews, VkRect2D rect, Depth& depth, Msaa& msaa)
     {
         //createFramebuffers
         auto imageViewSize = imageViews.size();
         m_framebuffers.resize(imageViewSize);
         for (size_t i = 0; i < imageViewSize; i++) {
             std::vector<VkImageView> imageViewsNeed = {
+                msaa.m_MsaaImageView,
+                depth.m_DepthImageView,
                 imageViews[i], 
-                depth.m_DepthImageView
             };
 
             VkFramebufferCreateInfo framebufferCIF{};
@@ -297,11 +314,11 @@ namespace kvs
         return createInfo;
     }
 
-    VkPipelineMultisampleStateCreateInfo GraphicPipeline::RequestMultisampleStateCreateInfo()
+    VkPipelineMultisampleStateCreateInfo GraphicPipeline::RequestMultisampleStateCreateInfo(VkSampleCountFlagBits samples)
     {
         VkPipelineMultisampleStateCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        createInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        createInfo.rasterizationSamples = samples;
         createInfo.sampleShadingEnable = VK_FALSE;
         return createInfo;
     }
