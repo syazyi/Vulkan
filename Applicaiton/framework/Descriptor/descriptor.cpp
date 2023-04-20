@@ -106,7 +106,6 @@ namespace kvs
             writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             writes[1].pImageInfo = &imageInfo;
 
-
             vkUpdateDescriptorSets(m_Device, writes.size(), writes.data(), 0, nullptr);
         }
     }

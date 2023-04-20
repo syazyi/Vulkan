@@ -30,6 +30,7 @@ namespace kvs
 
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};
         physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
+        physicalDeviceFeatures.sampleRateShading = VK_TRUE;
         createInfo.pEnabledFeatures = &physicalDeviceFeatures;
       
         createInfo.enabledExtensionCount = PhysicalDevice::m_deviceExtensionsSupport.size();

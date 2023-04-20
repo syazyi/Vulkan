@@ -319,7 +319,8 @@ namespace kvs
         VkPipelineMultisampleStateCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         createInfo.rasterizationSamples = samples;
-        createInfo.sampleShadingEnable = VK_FALSE;
+        createInfo.sampleShadingEnable = VK_TRUE;
+        createInfo.minSampleShading = 0.2f;
         return createInfo;
     }
 
